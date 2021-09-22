@@ -7,6 +7,9 @@ const { PORT } = require('./config/globals');
 const { getConnection } = require('./dao/db/connection');
 const routes = require("./routes/routes");
 
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+
 const http = require('http');
 const server = http.createServer(app);
 const {Server} = require('socket.io');
@@ -24,8 +27,46 @@ app.engine('handlebars', exphbs());
 app.set("views", "./src/views");
 app.set('view engine', 'handlebars');
 
+app.use(
+  session({
+    secret: "dbnÑASHIDÑahsñDASHaisbhiUAWEHDI46A5s4d56ASlñakshdLÑADHÑasdn",
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 60 * 1000
+    }
+  })
+);
 
+app.use(cookieParser());
+app.use(express.json());
 
+app.post("/singup", (req, res, next) => {
+  if (!req.body.username && !req.body.password)
+    throw new Error("No es posible registrarse");
+  const { username } = req.body;
+  req.session[username] = username;
+  req.session.id = req.session.id ? req.session.id + 1 : 1;
+  res.cookie("isRegistered", "true").json({
+    msg: "Usuario registrado",
+    username,
+    id: req.session.id
+  });
+});
+
+app.post("/login", (req, res, next) => {
+  if (!req.body.username && !req.body.password) throw new Error("No es posible ingresar");
+  const { username } = req.body;
+  if (req.session[username]== username) {
+    res.send("Te has autenticado con éxito");
+  }else{
+      res.send('No estás registrado')
+  }
+});
+app.post("/logout", (req, res, next) => {
+  req.session.destroy();
+  res.send("Has salido con èxito");
+});
 
 io.on('connection', async (socket) => {
   productoService = new ProductoService();
