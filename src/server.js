@@ -29,7 +29,7 @@ app.set('view engine', 'handlebars');
 
 app.use(
   session({
-    secret: "dbnÑASHIDÑahsñDASHaisbhiUAWEHDI46A5s4d56ASlñakshdLÑADHÑasdn",
+    secret: process.env.SECRET_KEY,
     resave: true,
     saveUninitialized: true,
     cookie: {
